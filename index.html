@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Open Science Bingo</title>
+<link rel="stylesheet" href="style.css" />
+
+</head>
+<body>
+<header>Open Science Bingo</header>
+
+<div id="modeToggle">
+  <button id="btnPlayer" disabled>Player Mode</button>
+  <button id="btnHost">Host Mode</button>
+</div>
+
+<div id="container">
+  <div id="playerPanel">
+    <div id="markerSelect" aria-label="Select marker">
+      <span class="marker-option selected" data-marker="check">✓</span>
+      <span class="marker-option" data-marker="cross">✗</span>
+      <span class="marker-option" data-marker="heart">♥</span>
+      <span class="marker-option" data-marker="star">★</span>
+    </div>
+    <div id="bingoCard" role="grid" aria-label="Bingo Card"></div>
+    <div style="text-align:center; margin-top:1rem;">
+      <button id="btnClear">Clear Card</button>
+      <button id="btnNew">New Card</button>
+    </div>
+  </div>
+
+  <div id="hostPanel" style="display:none;">
+    <button id="btnSpin">🎲 Spin the Wheel!</button>
+    <div id="calledStatement" aria-live="polite"></div>
+    <h4>Called Statements History</h4>
+    <ul id="historyList" aria-live="polite" aria-label="History of called statements"></ul>
+    <button id="btnResetGame" style="margin-top:1rem;">🔄 Start New Game</button>
+  </div>
+</div>
+
+<script>
+  // Statements for the bingo card and wheel
+  const statements = [
+    "Preregister your study",
+    "Share your data openly",
+    "Use version control (Git)",
+    "Publish in open access journals",
+    "Share your analysis code",
+    "Write a data management plan",
+    "Use open source software",
+    "Include a reproducibility statement",
+    "Conduct power analysis",
+    "Make your protocol public",
+    "Join a preprint server",
+    "Use reporting checklists",
+    "Provide metadata for datasets",
+    "Publish negative results",
+    "Participate in peer review",
+    "Register hypotheses in advance",
+    "Use FAIR data principles",
+    "Make data FAIR",
+    "Use persistent identifiers",
+    "Display funding sources transparently",
+    "Disclose conflicts of interest",
+    "Promote diversity in research",
+    "Use standard ontologies",
+    "Share materials and reagents",
+    "Cite data and software properly"
+  ];
+
+  // Globals
+  let cardStatements = [];
+  let calledStatements = [];
+  let selectedMarker = 'check';
+  let mode = "player"; // or "host"
+  let cardState = Array(25).fill(false); // marked or not
+
+  // DOM references
+  const bingoCardEl = document.getElementById('bingoCard');
+  const markerOptions = document.querySelectorAll('.marker-option');
+  const btnClear = document.getElementById('btnClear');
+  const btnNew = document.getElementById('btnNew');
+  const btnSpin = document.getElementById('btnSpin');
+  const calledStatementEl = document.getElementById('calledStatement');
+  const historyListEl = document.getElementById('historyList');
+  const btnResetGame = document.getElementById('btnResetGame');
+  const btnPlayer = document.getElementById('btnPlayer');
+  const btnHost = document.getElementById('btnHost');
+  const playerPanel = document.getElementById('playerPanel');
+  const hostPanel = document.getElementById('hostPanel');
+
+  // Helpers
+  function shuffle(array) {
+    let arr = array.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // Generate card with random unique statements (except free center)
+  function generateCard() {
+    let shuffled = shuffle(statements);
+    cardStatements = shuffled.slice(0, 24);
+    // Insert free space in center (index 12)
+    cardStatements.splice(12, 0, "FREE");
+    cardState = Array(25).fill(false);
+    renderCard();
+  }
+
+  // Render bingo card cells
+  function renderCard() {
+    bingoCardEl.innerHTML = '';
+    cardStatements.forEach((statement, i) => {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      if (i === 12) {
+        cell.classList.add('free-space');
+        cell.textContent = ''; // will place logo later, "FREE" placeholder for now
+        // For now just text:
+        cell.textContent = "FREE";
+      } else {
+        cell.textContent = statement;
+        cell.setAttribute('tabindex', 0);
+        cell.addEventListener('click', () => toggleMark(i));
+        cell.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            toggleMark(i);
+          }
+        });
+      }
+      // Mark if already marked
+      if (cardState[i]) {
+        cell.classList.add('marked');
+        cell.style.color = getMarkerColor(selectedMarker);
+        cell.textContent = getMarkerSymbol(selectedMarker);
+      }
+      bingoCardEl.appendChild(cell);
+    });
+  }
+
+  // Marker symbols by type
+  function getMarkerSymbol(marker) {
+    switch(marker){
+      case 'check': return '✓';
+      case 'cross': return '✗';
+      case 'heart': return '♥';
+      case 'star': return '★'; // Placeholder for SORTEE logo symbol
+      default: return '';
+    }
+  }
+  // Marker colors by type
+  function getMarkerColor(marker) {
+    switch(marker){
+      case 'check': return 'var(--marker-green)';
+      case 'cross': return 'var(--marker-red)';
+      case 'heart': return 'var(--red)';
+      case 'star': return 'gold';
+      default: return 'black';
+    }
+  }
+
+  // Toggle mark on card cell
+  function toggleMark(index) {
+    if (index === 12) return; // can't mark free space
+    cardState[index] = !cardState[index];
+    renderCard();
+  }
+
+  // Marker selection logic
+  markerOptions.forEach(opt => {
+    opt.addEventListener('click', () => {
+      markerOptions.forEach(o=>o.classList.remove('selected'));
+      opt.classList.add('selected');
+      selectedMarker = opt.getAttribute('data-marker');
+      renderCard();
+    });
+  });
+
+  // Clear card markings
+  btnClear.addEventListener('click', () => {
+    cardState = Array(25).fill(false);
+    renderCard();
+  });
+
+  // New card
+  btnNew.addEventListener('click', () => {
+    generateCard();
+  });
+
+  // Spin the Wheel! host logic
+  btnSpin.addEventListener('click', () => {
+    if (calledStatements.length >= 25) {
+      calledStatementEl.textContent = "All statements called!";
+      return;
+    }
+    let available = cardStatements.filter(s => s !== "FREE" && !calledStatements.includes(s));
+    if (available.length === 0) return;
+    // Animate spin
+    let spinCount = 15;
+    let idx = 0;
+    btnSpin.disabled = true;
+    const spinInterval = setInterval(() => {
+      calledStatementEl.textContent = available[idx % available.length];
+      idx++;
+      spinCount--;
+      if (spinCount <= 0) {
+        clearInterval(spinInterval);
+        let finalStatement = calledStatementEl.textContent;
+        calledStatements.push(finalStatement);
+        updateHistory();
+        btnSpin.disabled = false;
+      }
+    }, 100);
+  });
+
+  // Update history list
+  function updateHistory() {
+    historyListEl.innerHTML = '';
+    calledStatements.forEach((stmt,i) => {
+      const li = document.createElement('li');
+      li.textContent = `${i+1}. ${stmt}`;
+      historyListEl.appendChild(li);
+    });
+  }
+
+  // Reset full game
+  btnResetGame.addEventListener('click', () => {
+    calledStatements = [];
+    calledStatementEl.textContent = '';
+    updateHistory();
+    generateCard();
+  });
+
+  // Mode toggle buttons logic
+  btnPlayer.addEventListener('click', () => toggleMode("player"));
+  btnHost.addEventListener('click', () => toggleMode("host"));
+
+  function toggleMode(newMode){
+    if(newMode === "player"){
+      mode = "player";
+      playerPanel.style.display = '';
+      hostPanel.style.display = 'none';
+      btnPlayer.disabled = true;
+      btnHost.disabled = false;
+    } else {
+      mode = "host";
+      playerPanel.style.display = 'none';
+      hostPanel.style.display = '';
+      btnPlayer.disabled = false;
+      btnHost.disabled = true;
+    }
+  }
+
+  // Initialize
+  generateCard();
+  toggleMode("player");
+
+</script>
+</body>
+</html>
