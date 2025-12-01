@@ -35,38 +35,41 @@
     <div id="calledStatement" aria-live="polite"></div>
     <h4>Called Statements History</h4>
     <ul id="historyList" aria-live="polite" aria-label="History of called statements"></ul>
-    <button id="btnResetGame" style="margin-top:1rem;">🔄 Start New Game</button>
+    <button id="btnResetGame" style="margin-top:1rem;">Start a New Game!</button>
   </div>
 </div>
 
 <script>
   // Statements for the bingo card and wheel
   const statements = [
-    "Preregister your study",
-    "Share your data openly",
-    "Use version control (Git)",
-    "Publish in open access journals",
-    "Share your analysis code",
-    "Write a data management plan",
-    "Use open source software",
-    "Include a reproducibility statement",
-    "Conduct power analysis",
-    "Make your protocol public",
-    "Join a preprint server",
-    "Use reporting checklists",
-    "Provide metadata for datasets",
-    "Publish negative results",
-    "Participate in peer review",
-    "Register hypotheses in advance",
-    "Use FAIR data principles",
-    "Make data FAIR",
-    "Use persistent identifiers",
-    "Display funding sources transparently",
-    "Disclose conflicts of interest",
-    "Promote diversity in research",
-    "Use standard ontologies",
-    "Share materials and reagents",
-    "Cite data and software properly"
+  "Preregistered before the data tempted you",
+  "Documented data (future self is happy)",
+  "Shared data, even if that collegue didn't thank you for it",
+  "Actually used Git (not 'final_FINAL_v3.R')",
+  "Published in open access (paywalls are so 2010)",
+  "Shared your code (yes, the messy parts too)",
+  "Wrote a DMP (no, not 'we'll figure it out')",
+  "Used open source tools (support the community!)",
+  "Included a reproducibility statement (seriously)",
+  "Did a power analysis",
+  "Made your protocol public (transparency ftw)",
+  "Posted to a preprint server (faster than a journal)",
+  "Followed STROBE/ARRIVE/CONSORT/TADA (pick your flavour)",
+  "Added metadata to your data (future you will cry if you don't)",
+  "Published that null result!",
+  "Reviewed someone else's work (code counts too!)",
+  "Registered your hypotheses first (no p-hacking allowed)",
+  "Made your data FAIR (not just fair, but FAIR™)",
+  "Used DOIs and persistent identifiers",
+  "Listed your funding sources",
+  "Disclosed conflicts of interest (transparency rocks)",
+  "Built a diverse research team (better science happens)",
+  "Used standard ontologies (speak the same language)",
+  "Shared your materials (let others replicate!)",
+  "Cited data and software properly (they deserve credit too)",
+  "Participated to at least one SORTEE Virtual Social",
+  "Participated in the SORTEE Conference!",
+  "Used `renv`!"
   ];
 
   // Globals
